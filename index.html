@@ -289,7 +289,7 @@
         
         // 加载公告内容 - 使用GitHub Copilot的简洁方法
         function loadAnnouncement() {
-            fetch('/announcement.txt')
+            fetch('announcement.txt')
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('公告文件未找到');
