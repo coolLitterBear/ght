@@ -56,6 +56,47 @@
             display: inline-block;
         }
         
+        /* 公告区域 */
+        .announcement-box {
+            background-color: rgba(30, 136, 229, 0.1);
+            border: 1px solid #4fc3f7;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            max-width: 900px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .announcement-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #4fc3f7;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .announcement-title::before {
+            content: "📢";
+            font-size: 18px;
+        }
+        
+        .announcement-content {
+            font-size: 16px;
+            color: #bbdefb;
+            line-height: 1.5;
+        }
+        
+        .announcement-loading {
+            color: #90caf9;
+            font-style: italic;
+        }
+        
+        .announcement-error {
+            color: #f44336;
+        }
+        
         .content-box {
             background-color: #1e1e1e;
             border-radius: 12px;
@@ -198,6 +239,14 @@
     <!-- 主标题 -->
     <div class="title" id="main-title">GreenHat</div>
     
+    <!-- 公告区域 -->
+    <div class="announcement-box">
+        <div class="announcement-title" id="announcement-title">公告</div>
+        <div class="announcement-content" id="announcement-content">
+            <div class="announcement-loading">正在加载公告...</div>
+        </div>
+    </div>
+    
     <!-- 内容区域 -->
     <div class="content-box">
         <div class="text-content">
@@ -226,8 +275,41 @@
         const modalTitle = document.getElementById('modal-title');
         const modalEmail = document.getElementById('modal-email');
         const modalClose = document.getElementById('modal-close');
+        const announcementTitle = document.getElementById('announcement-title');
+        const announcementContent = document.getElementById('announcement-content');
         
         let isChinese = true;
+        let announcementData = null;
+        
+        // 加载公告内容
+        async function loadAnnouncement() {
+            try {
+                const response = await fetch('/announcement.txt');
+                if (!response.ok) {
+                    throw new Error('公告文件未找到');
+                }
+                const text = await response.text();
+                announcementData = JSON.parse(text);
+                
+                // 根据当前语言显示公告内容
+                updateAnnouncementContent();
+                
+            } catch (error) {
+                console.error('加载公告失败:', error);
+                announcementContent.innerHTML = '<div class="announcement-error">公告加载失败</div>';
+            }
+        }
+        
+        // 更新公告内容
+        function updateAnnouncementContent() {
+            if (!announcementData) return;
+            
+            const content = isChinese ? announcementData.zh : announcementData.en;
+            announcementContent.innerHTML = content.replace(/\n/g, '<br>');
+        }
+        
+        // 页面加载时获取公告
+        document.addEventListener('DOMContentLoaded', loadAnnouncement);
         
         languageToggle.addEventListener('click', function() {
             isChinese = !isChinese;
@@ -242,6 +324,7 @@
                 modalTitle.textContent = '联系我们';
                 modalEmail.textContent = '邮箱：greenhatteam@163.com';
                 modalClose.textContent = '关闭';
+                announcementTitle.textContent = '公告';
             } else {
                 // 切换到英文
                 languageToggle.textContent = '中文';
@@ -252,6 +335,15 @@
                 modalTitle.textContent = 'Contact Us';
                 modalEmail.textContent = 'E-mail: greenhatteam@163.com';
                 modalClose.textContent = 'Close';
+                announcementTitle.textContent = 'Announcement';
+            }
+            
+            // 更新公告内容
+            if (announcementData) {
+                updateAnnouncementContent();
+            } else {
+                announcementContent.innerHTML = '<div class="announcement-loading">' + 
+                    (isChinese ? '正在加载公告...' : 'Loading announcement...') + '</div>';
             }
             
             // 点击效果

@@ -1,0 +1,4 @@
+{
+  "zh": "我们需要你的灵感，如果你有什么好想法，请联系我们。邮箱：ghtneedyou@hotmail.com",
+  "en": "We need your inspiration! If you have any great ideas, please contact us.Email: ghtneedyou@hotmail.com"
+}
