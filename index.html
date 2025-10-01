@@ -281,53 +281,39 @@
         let isChinese = true;
         let announcementData = null;
         
-        // 加载公告内容
-        async function loadAnnouncement() {
-            try {
-                console.log('开始加载公告文件...');
-                
-                // 尝试不同的文件路径
-                const basePath = window.location.pathname.includes('/') 
-                    ? '/' 
-                    : '';
-                const announcementPath = `${basePath}/announcement.txt`;
-                
-                console.log('尝试加载路径:', announcementPath);
-                
-                const response = await fetch(announcementPath);
-                if (!response.ok) {
-                    throw new Error(`HTTP错误: ${response.status}`);
-                }
-                
-                const text = await response.text();
-                console.log('获取到的文件内容:', text);
-                
-                // 尝试解析JSON
-                announcementData = JSON.parse(text);
-                console.log('解析后的公告数据:', announcementData);
-                
-                if (!announcementData.zh || !announcementData.en) {
-                    throw new Error('公告文件格式不正确，缺少zh或en字段');
-                }
-                
-                // 根据当前语言显示公告内容
-                updateAnnouncementContent();
-                
-            } catch (error) {
-                console.error('加载公告失败:', error);
-                const errorMessage = isChinese 
-                    ? '公告加载失败: ' + error.message 
-                    : 'Announcement loading failed: ' + error.message;
-                announcementContent.innerHTML = '<div class="announcement-error">' + errorMessage + '</div>';
-                
-                // 如果JSON解析失败，显示默认内容
-                if (error.name === 'SyntaxError') {
-                    const defaultContent = isChinese 
-                        ? '如果你看到这段文字，说明公告部分出现了bug，请报告给我们'
-                        : 'If you see this text, there is a bug in the announcement section, please report it to us.';
-                    announcementContent.innerHTML = defaultContent;
-                }
-            }
+        // 默认公告内容
+        const defaultAnnouncements = {
+            zh: "如果长时间停留在这段文字上，请报告给我们",
+            en: "If you stay on this text for a long time, please report it to us."
+        };
+        
+        // 加载公告内容 - 使用GitHub Copilot的简洁方法
+        function loadAnnouncement() {
+            fetch('/announcement.txt')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('公告文件未找到');
+                    }
+                    return response.text();
+                })
+                .then(text => {
+                    // 尝试解析JSON
+                    announcementData = JSON.parse(text);
+                    
+                    // 验证JSON格式
+                    if (!announcementData.zh || !announcementData.en) {
+                        throw new Error('公告文件格式不正确');
+                    }
+                    
+                    // 根据当前语言显示公告内容
+                    updateAnnouncementContent();
+                })
+                .catch(error => {
+                    console.log('使用默认公告内容:', error.message);
+                    // 使用默认内容
+                    announcementData = defaultAnnouncements;
+                    updateAnnouncementContent();
+                });
         }
         
         // 更新公告内容
@@ -339,10 +325,7 @@
         }
         
         // 页面加载时获取公告
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('页面加载完成，开始加载公告...');
-            loadAnnouncement();
-        });
+        document.addEventListener('DOMContentLoaded', loadAnnouncement);
         
         languageToggle.addEventListener('click', function() {
             isChinese = !isChinese;
@@ -372,14 +355,7 @@
             }
             
             // 更新公告内容
-            if (announcementData) {
-                updateAnnouncementContent();
-            } else {
-                announcementContent.innerHTML = '<div class="announcement-loading">' + 
-                    (isChinese ? '正在加载公告...' : 'Loading announcement...') + '</div>';
-                // 重新尝试加载公告
-                loadAnnouncement();
-            }
+            updateAnnouncementContent();
             
             // 点击效果
             this.style.transform = 'scale(0.95)';
@@ -421,4 +397,4 @@
         });
     </script>
 </body>
-</html
+</html>
