@@ -1,5 +1,9 @@
 # ght
-## Ver : 1.0.1
+## Ver : 1.0.3
+
+### 1.0.3
+- Fixed the project loading failure (caused by inability to properly read project.txt). The error occurred due to missing commas between properties in the JSON-formatted project.txt file.
+- Corrected the version indication error in this README.
 
 ### 1.0.2
 - Added project.txt (path: /project.txt) to optimize project loading.

@@ -1,14 +1,14 @@
 {
-  "count":1
+  "count":1,
   "data":[
     {
-      "num":1
+      "num":1,
       "id":"ghos",
       "name":"GreenHatOS",
       "name_zh":"GreenHatOS",
-      "introduction":"A virtual machine capable of running some basic functions."
-      "introduction_zh":"一个能运行一些基本功能的虚拟机。"
-      "URL":"https://coollitterbear.github.io/ghos/"
+      "introduction":"A virtual machine capable of running some basic functions.",
+      "introduction_zh":"一个能运行一些基本功能的虚拟机。",
+      "URL":"https://coollitterbear.github.io/ghos/",
       "repository":"https://github.com/coolLitterBear/ghos/"
     }
   ]
