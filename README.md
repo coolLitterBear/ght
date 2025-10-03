@@ -1,6 +1,8 @@
 # ght
 ## Ver : 1.0.1
 
+### 1.0.2
+- Added project.txt (path: /project.txt) to optimize project loading.
 ### 1.0.1
 - Announcement added, available in JSON format at "/announcement.txt". Language is consistent with the interface, providing bilingual Chinese-English support.
 

@@ -97,6 +97,11 @@
             color: #f44336;
         }
         
+        /* 项目容器 */
+        .projects-container {
+            max-width: 900px;
+        }
+        
         .content-box {
             background-color: #1e1e1e;
             border-radius: 12px;
@@ -105,7 +110,6 @@
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-            max-width: 900px;
             margin-top: 40px;
             border: 1px solid #ffffff;
         }
@@ -150,6 +154,19 @@
             transform: translateY(-2px);
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
             border-color: #ffffff;
+        }
+        
+        .projects-loading {
+            text-align: center;
+            color: #9e9e9e;
+            font-style: italic;
+            margin: 40px 0;
+        }
+        
+        .projects-error {
+            text-align: center;
+            color: #f44336;
+            margin: 40px 0;
         }
         
         /* 弹窗样式 */
@@ -247,13 +264,9 @@
         </div>
     </div>
     
-    <!-- 内容区域 -->
-    <div class="content-box">
-        <div class="text-content">
-            <div class="section-title" id="section-title">GreenHatOS</div>
-            <div class="description" id="description">一个能运行一些基本功能的虚拟机。</div>
-        </div>
-        <button class="go-button" onclick="window.location.href='https://coollitterbear.github.io/ghos/'">GO</button>
+    <!-- 项目容器 -->
+    <div class="projects-container" id="projects-container">
+        <div class="projects-loading">正在加载项目...</div>
     </div>
 
     <!-- 联系我们弹窗 -->
@@ -270,16 +283,16 @@
         const languageToggle = document.getElementById('language-toggle');
         const contactUs = document.getElementById('contact-us');
         const mainTitle = document.getElementById('main-title');
-        const sectionTitle = document.getElementById('section-title');
-        const description = document.getElementById('description');
         const modalTitle = document.getElementById('modal-title');
         const modalEmail = document.getElementById('modal-email');
         const modalClose = document.getElementById('modal-close');
         const announcementTitle = document.getElementById('announcement-title');
         const announcementContent = document.getElementById('announcement-content');
+        const projectsContainer = document.getElementById('projects-container');
         
         let isChinese = true;
         let announcementData = null;
+        let projectData = null;
         
         // 默认公告内容
         const defaultAnnouncements = {
@@ -287,7 +300,24 @@
             en: "If you stay on this text for a long time, please report it to us."
         };
         
-        // 加载公告内容 - 使用GitHub Copilot的简洁方法
+        // 默认项目内容
+        const defaultProject = {
+            count: 1,
+            data: [
+                {
+                    num: 1,
+                    id: "loading",
+                    name: "Loading",
+                    name_zh: "加载中",
+                    introduction: "If you stay on this text for a long time, please click the GO button to refresh. If you still have problems, please report them to us.",
+                    introduction_zh: "如果长时间停留在这段文字上，请点击GO按钮刷新。如果仍有问题，请报告给我们",
+                    URL: "http://ght.cblog.eu",
+                    repository: "https://github.com/coolLitterBear/ght/"
+                }
+            ]
+        };
+        
+        // 加载公告内容
         function loadAnnouncement() {
             fetch('announcement.txt')
                 .then(response => {
@@ -316,6 +346,35 @@
                 });
         }
         
+        // 加载项目内容
+        function loadProjects() {
+            fetch('project.txt')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('项目文件未找到');
+                    }
+                    return response.text();
+                })
+                .then(text => {
+                    // 尝试解析JSON
+                    projectData = JSON.parse(text);
+                    
+                    // 验证JSON格式
+                    if (!projectData.count || !projectData.data) {
+                        throw new Error('项目文件格式不正确');
+                    }
+                    
+                    // 根据当前语言显示项目
+                    renderProjects();
+                })
+                .catch(error => {
+                    console.log('使用默认项目内容:', error.message);
+                    // 使用默认内容
+                    projectData = defaultProject;
+                    renderProjects();
+                });
+        }
+        
         // 更新公告内容
         function updateAnnouncementContent() {
             if (!announcementData) return;
@@ -324,8 +383,45 @@
             announcementContent.innerHTML = content.replace(/\n/g, '<br>');
         }
         
-        // 页面加载时获取公告
-        document.addEventListener('DOMContentLoaded', loadAnnouncement);
+        // 渲染项目
+        function renderProjects() {
+            if (!projectData || !projectData.data) {
+                projectsContainer.innerHTML = '<div class="projects-error">项目数据加载失败</div>';
+                return;
+            }
+            
+            // 按num排序项目
+            const sortedProjects = [...projectData.data].sort((a, b) => a.num - b.num);
+            
+            // 清空容器
+            projectsContainer.innerHTML = '';
+            
+            // 为每个项目创建内容框
+            sortedProjects.forEach(project => {
+                const projectBox = document.createElement('div');
+                projectBox.className = 'content-box';
+                projectBox.id = `project-${project.id}`;
+                
+                const name = isChinese ? project.name_zh : project.name;
+                const introduction = isChinese ? project.introduction_zh : project.introduction;
+                
+                projectBox.innerHTML = `
+                    <div class="text-content">
+                        <div class="section-title">${name}</div>
+                        <div class="description">${introduction}</div>
+                    </div>
+                    <button class="go-button" onclick="window.location.href='${project.URL}'">GO</button>
+                `;
+                
+                projectsContainer.appendChild(projectBox);
+            });
+        }
+        
+        // 页面加载时获取公告和项目
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAnnouncement();
+            loadProjects();
+        });
         
         languageToggle.addEventListener('click', function() {
             isChinese = !isChinese;
@@ -335,8 +431,6 @@
                 languageToggle.textContent = 'English';
                 contactUs.textContent = '联系我们';
                 mainTitle.textContent = 'GreenHat';
-                sectionTitle.textContent = 'GreenHatOS';
-                description.textContent = '一个能运行一些基本功能的虚拟机。';
                 modalTitle.textContent = '联系我们';
                 modalEmail.textContent = '邮箱：greenhatteam@163.com';
                 modalClose.textContent = '关闭';
@@ -346,8 +440,6 @@
                 languageToggle.textContent = '中文';
                 contactUs.textContent = 'Contact Us';
                 mainTitle.textContent = 'GreenHat';
-                sectionTitle.textContent = 'GreenHatOS';
-                description.textContent = 'A virtual machine capable of running some basic functions.';
                 modalTitle.textContent = 'Contact Us';
                 modalEmail.textContent = 'E-mail: greenhatteam@163.com';
                 modalClose.textContent = 'Close';
@@ -356,6 +448,9 @@
             
             // 更新公告内容
             updateAnnouncementContent();
+            
+            // 更新项目内容
+            renderProjects();
             
             // 点击效果
             this.style.transform = 'scale(0.95)';
@@ -386,14 +481,6 @@
             if (event.target === contactModal) {
                 contactModal.style.display = 'none';
             }
-        });
-        
-        // GO按钮点击效果
-        document.querySelector('.go-button').addEventListener('click', function() {
-            this.style.transform = 'scale(0.95)';
-            setTimeout(() => {
-                this.style.transform = '';
-            }, 200);
         });
     </script>
 </body>
